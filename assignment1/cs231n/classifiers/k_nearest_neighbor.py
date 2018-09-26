@@ -1,4 +1,5 @@
 import numpy as np
+from collections import Counter
 
 class KNearestNeighbor(object):
   """ a kNN classifier with L2 distance """
@@ -66,11 +67,11 @@ class KNearestNeighbor(object):
     for i in range(num_test):
       for j in range(num_train):
         #####################################################################
-        # TODO:                                                             #
         # Compute the l2 distance between the ith test point and the jth    #
         # training point, and store the result in dists[i, j]. You should   #
         # not use a loop over dimension.                                    #
         #####################################################################
+        dists[i, j] += np.sqrt(np.sum(np.square(X[i, :] - self.X_train[j, :])))
         pass
         #####################################################################
         #                       END OF YOUR CODE                            #
@@ -89,11 +90,10 @@ class KNearestNeighbor(object):
     dists = np.zeros((num_test, num_train))
     for i in range(num_test):
       #######################################################################
-      # TODO:                                                               #
       # Compute the l2 distance between the ith test point and all training #
       # points, and store the result in dists[i, :].                        #
       #######################################################################
-      pass
+      dists[i, :] += np.sqrt(np.sum(np.square(X[i, :] - self.X_train), 1))
       #######################################################################
       #                         END OF YOUR CODE                            #
       #######################################################################
@@ -127,7 +127,7 @@ class KNearestNeighbor(object):
     #########################################################################
     return dists
 
-  def predict_labels(self, dists, k=1):
+  def predict_labels(self, dists, k=3):
     """
     Given a matrix of distances between test points and training points,
     predict a label for each test point.
@@ -145,15 +145,12 @@ class KNearestNeighbor(object):
     for i in range(num_test):
       # A list of length k storing the labels of the k nearest neighbors to
       # the ith test point.
-      closest_y = []
-      #########################################################################
-      # TODO:                                                                 #
-      # Use the distance matrix to find the k nearest neighbors of the ith    #
-      # testing point, and use self.y_train to find the labels of these       #
-      # neighbors. Store these labels in closest_y.                           #
-      # Hint: Look up the function numpy.argsort.                             #
-      #########################################################################
-      pass
+      sorted_index = np.argsort(dists[i])
+      close_y_k = self.y_train[sorted_index[0:k]]
+      ret = Counter(close_y_k).most_common(1)[0][0]
+      y_pred[i] += ret
+
+
       #########################################################################
       # TODO:                                                                 #
       # Now that you have found the labels of the k nearest neighbors, you    #
